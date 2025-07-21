@@ -27,3 +27,17 @@ maple -b bom.json -v '2021.1'
 ```
 
 It can be this simple, so no need for extraneous business. 
+
+## TODO Running
+- [ ] Generate BOM
+    - [ ] Use the lists to generate a test-bom
+    - [ ] Run it in its own Container on the side
+- [ ] Consume BOM to create fpd-list (first-party dependency)
+- [ ] Pass fpd-list to Orchestrator
+- [ ] for dep in fpd-list
+    - [ ] checkout at version specified
+    - [ ] build
+    - [ ] if passing,
+        - [ ] create branch, create tag, push
+    - [ ] notify team of project status
+
