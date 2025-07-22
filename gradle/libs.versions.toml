@@ -5,9 +5,11 @@
 guava = "33.4.5-jre"
 argparse = "2.0.7"
 kotest = "5.9.0"
+gson = "2.13.1"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 argparser = { module = "com.xenomachina:kotlin-argparser", version.ref = "argparse" }
 kotest = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 

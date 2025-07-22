@@ -17,8 +17,8 @@ class BomParserTest: FunSpec({
     test("parseJsonBomFile") {
         // Example test case for parsing a BOM file
          val bomParser = BomParser()
-         val dependencies = bomParser.parseJsonBomFile("path/to/bom.json")
-         assertEquals(dependencies.size,0)
+         val dependencies = bomParser.parseJsonBomFile("src/test/resources/test-bom.json")
+         assertEquals(dependencies.size,32)
 
     }
 })

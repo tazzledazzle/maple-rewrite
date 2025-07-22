@@ -1,5 +1,6 @@
 package com.tazzledazzle.internal.model
 
+import com.google.gson.annotations.SerializedName
 
 
 data class Bom(
@@ -27,6 +28,7 @@ data class MetadataTool (
 
 data class BomComponent (
     var type: String,
+    @SerializedName("bom-ref")
     var bomRef : String,
     var group: String,
     var name: String,

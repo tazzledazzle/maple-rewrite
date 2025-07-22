@@ -10,10 +10,11 @@ class BomParser {
     fun parseJsonBomFile(bomFilePath: String): List<String> {
         // Placeholder for BOM parsing logic
         // In a real implementation, you would read the BOM file and extract dependencies
-        val bom = Gson().fromJson(File(bomFilePath).readText(), Bom::class.java) ?: return Bom(
+        val bom = Gson().fromJson(File(bomFilePath).readText(), Bom::class.java)
+            ?: Bom()
 
-        )
-        return listOf()
+
+        return bom.components.map { it.bomRef }.toList()
     }
 
 

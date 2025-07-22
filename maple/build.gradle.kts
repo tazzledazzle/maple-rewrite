@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
     // This dependency is used by the application.
-    implementation(libs.guava)
+    implementation(libs.gson)
     implementation(libs.argparser)
     testImplementation(libs.kotest)
 }
