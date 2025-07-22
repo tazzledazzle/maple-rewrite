@@ -1,0 +1,398 @@
+diff --git a/docs/build-runner.md b/docs/build-runner.md
+new file mode 100644
+index 0000000..c0ffee0
+--- /dev/null
++++ b/docs/build-runner.md
+@@ -0,0 +1,210 @@
++# Build Runner v2
++
++## Goals
++1. Support Gradle Build Scans (auto `--scan`, parse scan URL).
++2. Optional containerized execution using Docker (via `docker-java`).
++3. Structured result (duration, log path, exit code, scanUrl, stdout tail).
++4. Pluggable runners (Shell, Gradle/Maven detection, Dockerized wrapper).
++
++## API
++```kotlin
++interface BuildRunner {
++  fun run(spec: BuildSpec): BuildResult
++}
++
++data class BuildSpec(
++  val repoRoot: Path,
++  val command: List<String>,
++  val env: Map<String, String> = emptyMap(),
++  val timeout: Duration = Duration.ofMinutes(15),
++  val logDir: Path,
++  val enableGradleScan: Boolean = false,
++  val runInDocker: Boolean = false,
++  val dockerImage: String = "gradle:8.9-jdk21", // default, adjust as needed
++  val mounts: List<DockerMount> = emptyList()
++)
++
++data class DockerMount(val host: Path, val container: Path, val readOnly: Boolean = false)
++
++sealed class BuildResult {
++  data class Success(
++    val duration: Duration,
++    val logFile: Path,
++    val scanUrl: String? = null
++  ) : BuildResult()
++  data class Failure(
++    val exitCode: Int,
++    val duration: Duration,
++    val logFile: Path,
++    val message: String? = null,
++    val scanUrl: String? = null
++  ) : BuildResult()
++}
++```
++
++## Gradle Scan Detection
++- If `enableGradleScan`, append `--scan` to command when `gradlew` detected.
++- Regex match on output:
++  ```
++  https?://.*gradle.com/s/[A-Za-z0-9]+
++  ```
++- Store first match as `scanUrl`.
++
++## Docker Mode
++- If `runInDocker`:
++  - Use `docker-java` to:
++    1. Pull (if missing) `spec.dockerImage`.
++    2. Create container with bind mounts.
++    3. Exec build command inside container.
++  - Repo root mounted at `/workspace` (container working dir).
++
++## NFR
++- Timeouts enforced both host-side and (optionally) docker exec timeout.
++- Logs streamed to file with redaction.
++- Simple secret redaction (env keys containing TOKEN|PASS|SECRET|KEY).
++
++## Tests
++- Dummy script success/failure.
++- Timeout test.
++- Regex scan url test.
++- (Optional) docker test guarded by env var (skip in CI if Docker not available).
++
+diff --git a/build.gradle.kts b/build.gradle.kts
+index abc1234..def5678 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -5,6 +5,15 @@ dependencies {
+     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
++    // docker-java
++    implementation("com.github.docker-java:docker-java-core:3.3.6")
++    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.3.6")
++    // YAML (if we need fixtures config parsing later)
++    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
+ }
+ 
+ tasks.test {
+     useJUnitPlatform()
+ }
++
++// If you use version catalogs, place these in libs.versions.toml instead.
+diff --git a/src/main/kotlin/com/tazzledazzle/maple/build/BuildRunner.kt b/src/main/kotlin/com/tazzledazzle/maple/build/BuildRunner.kt
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/main/kotlin/com/tazzledazzle/maple/build/BuildRunner.kt
+@@ -0,0 +1,191 @@
++package com.tazzledazzle.maple.build
++
++import java.nio.file.Files
++import java.nio.file.Path
++import java.time.Duration
++import java.time.Instant
++import java.util.concurrent.TimeUnit
++import kotlin.io.path.exists
++
++interface BuildRunner {
++    fun run(spec: BuildSpec): BuildResult
++}
++
++data class BuildSpec(
++    val repoRoot: Path,
++    val command: List<String>,
++    val env: Map<String, String> = emptyMap(),
++    val timeout: Duration = Duration.ofMinutes(15),
++    val logDir: Path,
++    val enableGradleScan: Boolean = false,
++    val runInDocker: Boolean = false,
++    val dockerImage: String = "gradle:8.9-jdk21",
++    val mounts: List<DockerMount> = emptyList()
++)
++
++data class DockerMount(val host: Path, val container: Path, val readOnly: Boolean = false)
++
++sealed class BuildResult {
++    data class Success(
++        val duration: Duration,
++        val logFile: Path,
++        val scanUrl: String? = null
++    ) : BuildResult()
++    data class Failure(
++        val exitCode: Int,
++        val duration: Duration,
++        val logFile: Path,
++        val message: String? = null,
++        val scanUrl: String? = null
++    ) : BuildResult()
++}
++
++object BuildRunnerFactory {
++    fun detect(repoRoot: Path, explicit: String?, logDir: Path, enableScan: Boolean, docker: Boolean): BuildSpec {
++        if (explicit != null) {
++            return BuildSpec(repoRoot, explicit.split(" "), logDir = logDir, enableGradleScan = enableScan, runInDocker = docker)
++        }
++        val gradlew = repoRoot.resolve("gradlew")
++        val mvnw = repoRoot.resolve("mvnw")
++        return when {
++            gradlew.exists() -> {
++                val cmd = mutableListOf("./gradlew", "build")
++                if (enableScan) cmd += "--scan"
++                BuildSpec(repoRoot, cmd, logDir = logDir, enableGradleScan = enableScan, runInDocker = docker)
++            }
++            mvnw.exists() || repoRoot.resolve("pom.xml").exists() -> BuildSpec(
++                repoRoot,
++                listOf("./mvnw", "-B", "verify"),
++                logDir = logDir,
++                runInDocker = docker
++            )
++            else -> throw IllegalArgumentException("No build command found for $repoRoot")
++        }
++    }
++}
++
++class ShellBuildRunner : BuildRunner {
++    private val scanRegex = Regex("https?://\\S*gradle.com/s/\\S+")
++    private val redactKeys = listOf("TOKEN", "PASS", "SECRET", "KEY")
++
++    override fun run(spec: BuildSpec): BuildResult {
++        return if (spec.runInDocker) DockerizedRunner(this).run(spec) else runLocal(spec)
++    }
++
++    private fun runLocal(spec: BuildSpec): BuildResult {
++        Files.createDirectories(spec.logDir)
++        val logFile = spec.logDir.resolve("build-${Instant.now().toEpochMilli()}.log")
++
++        val start = Instant.now()
++        val pb = ProcessBuilder(spec.command)
++            .directory(spec.repoRoot.toFile())
++            .redirectErrorStream(true)
++
++        val env = pb.environment()
++        spec.env.forEach { (k, v) -> env[k] = v }
++
++        val proc = pb.start()
++
++        var scanUrl: String? = null
++        Files.newBufferedWriter(logFile).use { out ->
++            proc.inputStream.bufferedReader().useLines { lines ->
++                lines.forEach { line ->
++                    val redacted = redact(line)
++                    out.write(redacted)
++                    out.newLine()
++                    if (scanUrl == null) {
++                        val match = scanRegex.find(redacted)
++                        if (match != null) scanUrl = match.value
++                    }
++                }
++            }
++        }
++
++        val finished = proc.waitFor(spec.timeout.toMillis(), TimeUnit.MILLISECONDS)
++        if (!finished) {
++            proc.destroyForcibly()
++            return BuildResult.Failure(
++                exitCode = -1,
++                duration = Duration.between(start, Instant.now()),
++                logFile = logFile,
++                message = "Timeout after ${spec.timeout.toMinutes()}m",
++                scanUrl = scanUrl
++            )
++        }
++
++        val duration = Duration.between(start, Instant.now())
++        val code = proc.exitValue()
++        return if (code == 0) {
++            BuildResult.Success(duration, logFile, scanUrl)
++        } else {
++            BuildResult.Failure(code, duration, logFile, "Exited $code", scanUrl)
++        }
++    }
++
++    private fun redact(line: String): String {
++        var out = line
++        redactKeys.forEach { k ->
++            out = out.replace(Regex("(?i)$k=\\S+"), "$k=****")
++        }
++        return out
++    }
++}
++
++/**
++ * Wrap ShellBuildRunner, but execute inside Docker.
++ */
++class DockerizedRunner(private val delegate: ShellBuildRunner) : BuildRunner {
++    override fun run(spec: BuildSpec): BuildResult {
++        val client = Docker.client()
++        val image = spec.dockerImage
++        Docker.ensureImage(client, image)
++
++        val repoMount = DockerMount(spec.repoRoot, Path.of("/workspace"), readOnly = false)
++        val allMounts = listOf(repoMount) + spec.mounts
++
++        val containerId = Docker.createContainer(client, image, "/bin/sh", listOf("-c", spec.command.joinToString(" ")), allMounts)
++        try {
++            val startedAt = Instant.now()
++            Docker.start(client, containerId)
++            val logsPath = spec.logDir.resolve("build-${Instant.now().toEpochMilli()}.log")
++            val scanRegex = Regex("https?://\\S*gradle.com/s/\\S+")
++            var scanUrl: String? = null
++
++            Files.createDirectories(spec.logDir)
++            Files.newBufferedWriter(logsPath).use { out ->
++                Docker.streamLogs(client, containerId, spec.timeout) { line ->
++                    out.write(line)
++                    out.newLine()
++                    if (scanUrl == null) {
++                        val m = scanRegex.find(line)
++                        if (m != null) scanUrl = m.value
++                    }
++                }
++            }
++
++            val exit = Docker.wait(client, containerId, spec.timeout)
++            val dur = Duration.between(startedAt, Instant.now())
++            return if (exit == 0L) {
++                BuildResult.Success(dur, logsPath, scanUrl)
++            } else {
++                BuildResult.Failure(exit.toInt(), dur, logsPath, "Exited $exit", scanUrl)
++            }
++        } finally {
++            Docker.cleanup(client, containerId)
++            client.close()
++        }
++    }
++}
+diff --git a/src/main/kotlin/com/tazzledazzle/maple/build/Docker.kt b/src/main/kotlin/com/tazzledazzle/maple/build/Docker.kt
+new file mode 100644
+index 0000000..2222222
+--- /dev/null
++++ b/src/main/kotlin/com/tazzledazzle/maple/build/Docker.kt
+@@ -0,0 +1,139 @@
++package com.tazzledazzle.maple.build
++
++import com.github.dockerjava.api.DockerClient
++import com.github.dockerjava.api.command.CreateContainerResponse
++import com.github.dockerjava.api.model.Bind
++import com.github.dockerjava.api.model.HostConfig
++import com.github.dockerjava.api.model.Volume
++import com.github.dockerjava.core.DefaultDockerClientConfig
++import com.github.dockerjava.core.DockerClientBuilder
++import com.github.dockerjava.core.command.LogContainerResultCallback
++import java.nio.file.Path
++import java.time.Duration
++import java.util.concurrent.TimeUnit
++
++object Docker {
++    fun client(): DockerClient {
++        val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
++        return DockerClientBuilder.getInstance(config).build()
++    }
++
++    fun ensureImage(client: DockerClient, image: String) {
++        val images = client.listImagesCmd().withImageNameFilter(image).exec()
++        if (images.isEmpty()) {
++            client.pullImageCmd(image).start().awaitCompletion()
++        }
++    }
++
++    fun createContainer(
++        client: DockerClient,
++        image: String,
++        entrypoint: String,
++        cmd: List<String>,
++        mounts: List<DockerMount>
++    ): String {
++        val binds = mounts.map {
++            Bind(it.host.toAbsolutePath().toString(), Volume(it.container.toString()), !it.readOnly)
++        }
++
++        val hc = HostConfig.newHostConfig().withBinds(binds)
++        val resp: CreateContainerResponse = client.createContainerCmd(image)
++            .withHostConfig(hc)
++            .withWorkingDir("/workspace")
++            .withEntrypoint(entrypoint)
++            .withCmd(cmd)
++            .exec()
++        return resp.id
++    }
++
++    fun start(client: DockerClient, containerId: String) {
++        client.startContainerCmd(containerId).exec()
++    }
++
++    fun streamLogs(client: DockerClient, containerId: String, timeout: Duration, consume: (String) -> Unit) {
++        val callback = object : LogContainerResultCallback() {
++            override fun onNext(item: com.github.dockerjava.api.model.Frame) {
++                consume(String(item.payload).trimEnd())
++            }
++        }
++        client.logContainerCmd(containerId)
++            .withStdErr(true)
++            .withStdOut(true)
++            .withFollowStream(true)
++            .exec(callback)
++        callback.awaitCompletion(timeout.toMillis(), TimeUnit.MILLISECONDS)
++    }
++
++    fun wait(client: DockerClient, containerId: String, timeout: Duration): Long {
++        val res = client.waitContainerCmd(containerId).start()
++        val s = res.awaitStatusCode(timeout.toMillis(), TimeUnit.MILLISECONDS)
++        return s?.toLong() ?: -1
++    }
++
++    fun cleanup(client: DockerClient, containerId: String) {
++        runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
++    }
++}
+diff --git a/src/test/kotlin/com/tazzledazzle/maple/build/BuildRunnerTest.kt b/src/test/kotlin/com/tazzledazzle/maple/build/BuildRunnerTest.kt
+index f00baa0..0badc0d 100644
+--- a/src/test/kotlin/com/tazzledazzle/maple/build/BuildRunnerTest.kt
++++ b/src/test/kotlin/com/tazzledazzle/maple/build/BuildRunnerTest.kt
+@@ -1,6 +1,7 @@
+ package com.tazzledazzle.maple.build
+ 
+ import org.junit.jupiter.api.Assertions.*
+ import org.junit.jupiter.api.Test
+ import java.nio.file.Files
+ import java.nio.file.Path
+ import java.time.Duration
+@@ -40,4 +41,23 @@ class BuildRunnerTest {
+         val spec = BuildRunnerFactory.detect(tmp, null, tmp)
+         assertEquals("./gradlew", spec.command.first())
+     }
++
++    @Test
++    fun `scan url regex works`() {
++        val runner = ShellBuildRunner()
++        // no direct access, but ensure regex is correct by simulating line.
++        val line = "Publishing build scan... https://gradle.com/s/abc123"
++        val match = Regex("https?://\\S*gradle.com/s/\\S+").find(line)
++        assertNotNull(match)
++    }
++
++    // Docker test skipped unless DOCKER_AVAILABLE=true
++    @Test
++    fun `docker runner optional`() {
++        if (System.getenv("DOCKER_AVAILABLE") != "true") return
++        val tmp = Files.createTempDirectory("maple-docker")
++        Files.writeString(tmp.resolve("build.sh"), "#!/bin/sh\necho hi\n").toFile().setExecutable(true)
++        val spec = BuildSpec(tmp, listOf("sh","/workspace/build.sh"), logDir = tmp, runInDocker = true)
++        val res = ShellBuildRunner().run(spec)
++        assertTrue(res is BuildResult.Success)
++    }
+ }
