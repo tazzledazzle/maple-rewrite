@@ -21,6 +21,5 @@ class MapleTest {
             assertEquals("arg2", version, "Expected version flag to be set")
             assertEquals(false, liveRun, "Expected liveRun to be false by default")
         }
-
     }
 }
