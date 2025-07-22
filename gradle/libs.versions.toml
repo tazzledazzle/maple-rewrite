@@ -6,9 +6,13 @@ guava = "33.4.5-jre"
 argparse = "2.0.7"
 kotest = "5.9.0"
 gson = "2.13.1"
+kgit = "1.1.0"
+docker-java = "3.5.3"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+kgit = { module = "com.github.sya-ri:kgit", version.ref = "kgit" }
+docker-java = { module = "com.github.docker-java:docker-java", version.ref = "docker-java" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 argparser = { module = "com.xenomachina:kotlin-argparser", version.ref = "argparse" }
 kotest = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }

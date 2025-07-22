@@ -17,12 +17,15 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+
 }
 
 dependencies {
     // This dependency is used by the application.
     implementation(libs.gson)
     implementation(libs.argparser)
+    implementation(libs.kgit)
+    implementation(libs.docker.java)
     testImplementation(libs.kotest)
 }
 

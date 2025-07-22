@@ -46,14 +46,12 @@ class BomParser {
 * */
 
         fun correlateComponentsWithDependencies(
-            components: List<String>,
-            dependencies: List<String>
         ): Map<String, String> {
 
 
             // Placeholder for logic to correlate components with dependencies
             // This could involve matching component references with dependency references
-            return mapOf<String, String>()
+            return mapOf()
         }
     }
 }
