@@ -8,7 +8,15 @@ class FixturesServiceTest {
     @Test
     fun `local fixtures lifecycle`() {
         val tmp = Files.createTempDirectory("maple-fixtures")
-        val spec = FixturesSpec("local", 2, tmp, null, "fx-", "1.0.0", "./gradlew build")
+        val spec = FixturesSpec(
+            "local",
+            2,
+            tmp,
+            null,
+            "fx-",
+            "1.0.0",
+            "./gradlew build"
+        )
         val svc = FixturesService()
         svc.init(spec)
         val bomPath = tmp.resolve(FixturesService.BOM_NAME)

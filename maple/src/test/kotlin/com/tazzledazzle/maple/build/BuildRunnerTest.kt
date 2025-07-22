@@ -69,7 +69,13 @@ class BuildRunnerTest {
     fun `factory detects gradle`() {
         val tmp = Files.createTempDirectory("maple-test3")
         Files.writeString(tmp.resolve("gradlew"), "dummy").toFile().setExecutable(true)
-        val spec = BuildRunnerFactory.detect(tmp, null, tmp)
+        val spec = BuildRunnerFactory.detect(
+            tmp,
+            null,
+            tmp,
+            enableScan = false,
+            docker = false
+        )
         assertEquals("./gradlew", spec.command.first())
     }
 }

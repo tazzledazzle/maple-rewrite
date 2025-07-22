@@ -19,4 +19,4 @@ class GitTest: FunSpec( {
         assert(git != null) { "Git instance should not be null" }
     }
 
-}
+})
