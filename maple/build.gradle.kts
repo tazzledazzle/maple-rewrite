@@ -27,6 +27,13 @@ dependencies {
     implementation(libs.kgit)
     implementation(libs.docker.java)
     testImplementation(libs.kotest)
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    // ensure test deps for JUnit if not present
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 testing {
