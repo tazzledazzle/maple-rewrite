@@ -80,4 +80,4 @@ class RemoteMode {
 
 }
 
-fun generateFixtures(cfg: FixtureConfig): List<RepoMeta> { /* ... */ }
+fun generateFixtures(cfg: FixtureConfig): List<RepoMeta> { return listOf() }
