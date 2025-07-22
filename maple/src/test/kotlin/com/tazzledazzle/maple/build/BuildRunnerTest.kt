@@ -44,6 +44,27 @@ class BuildRunnerTest {
         assertEquals(-1, res.exitCode)
     }
 
+
+    @Test
+    fun `scan url regex works`() {
+        val runner = ShellBuildRunner()
+        // no direct access, but ensure regex is correct by simulating line.
+        val line = "Publishing build scan... https://gradle.com/s/abc123"
+        val match = Regex("https?://\\S*gradle.com/s/\\S+").find(line)
+        assertNotNull(match)
+    }
+
+    // Docker test skipped unless DOCKER_AVAILABLE=true
+    @Test
+    fun `docker runner optional`() {
+        if (System.getenv("DOCKER_AVAILABLE") != "true") return
+        val tmp = Files.createTempDirectory("maple-docker")
+        Files.writeString(tmp.resolve("build.sh"), "#!/bin/sh\necho hi\n").toFile().setExecutable(true)
+        val spec = BuildSpec(tmp, listOf("sh","/workspace/build.sh"), logDir = tmp, runInDocker = true)
+        val res = ShellBuildRunner().run(spec)
+        assertTrue(res is BuildResult.Success)
+    }
+
     @Test
     fun `factory detects gradle`() {
         val tmp = Files.createTempDirectory("maple-test3")

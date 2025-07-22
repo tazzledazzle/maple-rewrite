@@ -29,6 +29,11 @@ dependencies {
     testImplementation(libs.kotest)
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    // docker-java
+    implementation("com.github.docker-java:docker-java-core:3.3.6")
+    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.3.6")
+    // YAML (if we need fixtures config parsing later)
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
     // ensure test deps for JUnit if not present
 }
 
