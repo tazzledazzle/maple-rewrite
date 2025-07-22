@@ -3,9 +3,16 @@
  */
 package com.tazzledazzle
 
+import com.sun.tools.javac.tree.TreeInfo.flags
+import com.tazzledazzle.maple.build.BuildResult
+import com.tazzledazzle.maple.build.BuildRunnerFactory
+import com.tazzledazzle.maple.build.ShellBuildRunner
+import com.tazzledazzle.maple.git.GitDriver
+import com.tazzledazzle.maple.git.KGitDriver
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import java.nio.file.Path
+import java.util.Map.entry
 
 class Maple {
     val greeting: String
@@ -80,4 +87,21 @@ class RemoteMode {
 
 }
 
-fun generateFixtures(cfg: FixtureConfig): List<RepoMeta> { return listOf() }
+ val git: GitDriver = KGitDriver() // or ShellGitDriver()
+    git.cloneOrFetch(entry.repoUrl, checkoutDir)
+    git.checkout(checkoutDir, entry.version)
+
+ val spec = BuildRunnerFactory.detect(
+    checkoutDir,
+    entry.buildCmd,
+    logDir,
+    enableScan = true,
+    docker = flags.docker
+ )
+ val result = ShellBuildRunner().run(spec)
+ val (success, scan) = when (result) {
+    is BuildResult.Success -> true to result.scanUrl
+    is BuildResult.Failure -> false to result.scanUrl
+ }
+ repoStatus.scanUrl = scan
+
