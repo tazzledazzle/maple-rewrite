@@ -1,0 +1,531 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-07-21T19:00:00Z",
+    "tools": [
+      {
+        "vendor": "ChatGPT",
+        "name": "CycloneDX Generator",
+        "version": "1.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "Full Dependency BOM",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:admin-insights-service-protobuf:1.9.0",
+      "group": "com.tableau.modules",
+      "name": "admin-insights-service-protobuf",
+      "version": "1.9.0",
+      "purl": "pkg:maven/com.tableau.modules/admin-insights-service-protobuf@1.9.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:allegro-client:1.190.0",
+      "group": "com.tableau.modules",
+      "name": "allegro-client",
+      "version": "1.190.0",
+      "purl": "pkg:maven/com.tableau.modules/allegro-client@1.190.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:allegro-db-migrations:1.7.0",
+      "group": "com.tableau.modules",
+      "name": "allegro-db-migrations",
+      "version": "1.7.0",
+      "purl": "pkg:maven/com.tableau.modules/allegro-db-migrations@1.7.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.rabbitmq:amqp-client:5.7.3",
+      "group": "com.rabbitmq",
+      "name": "amqp-client",
+      "version": "5.7.3",
+      "purl": "pkg:maven/com.rabbitmq/amqp-client@5.7.3"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.antlr:antlr4-runtime",
+      "group": "org.antlr",
+      "name": "antlr4-runtime",
+      "purl": "pkg:maven/org.antlr/antlr4-runtime"
+    },
+    {
+      "type": "library",
+      "bom-ref": "aopalliance:aopalliance:1.0",
+      "group": "aopalliance",
+      "name": "aopalliance",
+      "version": "1.0",
+      "purl": "pkg:maven/aopalliance/aopalliance@1.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.apache:axis:1.4.219",
+      "group": "org.apache",
+      "name": "axis",
+      "version": "1.4.219",
+      "purl": "pkg:maven/org.apache/axis@1.4.219"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.apache.directory.server:apacheds-core-integ:2.0.0-M22",
+      "group": "org.apache.directory.server",
+      "name": "apacheds-core-integ",
+      "version": "2.0.0-M22",
+      "purl": "pkg:maven/org.apache.directory.server/apacheds-core-integ@2.0.0-M22"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.apache.directory.server:apacheds-all:2.0.0-M22",
+      "group": "org.apache.directory.server",
+      "name": "apacheds-all",
+      "version": "2.0.0-M22",
+      "purl": "pkg:maven/org.apache.directory.server/apacheds-all@2.0.0-M22"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.apache.directory.server:apacheds-server-integ:2.0.0-M22",
+      "group": "org.apache.directory.server",
+      "name": "apacheds-server-integ",
+      "version": "2.0.0-M22",
+      "purl": "pkg:maven/org.apache.directory.server/apacheds-server-integ@2.0.0-M22"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.apache.jmeter:ApacheJMeter_core:2.10",
+      "group": "org.apache.jmeter",
+      "name": "ApacheJMeter_core",
+      "version": "2.10",
+      "purl": "pkg:maven/org.apache.jmeter/ApacheJMeter_core@2.10"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.apache.jmeter:ApacheJMeter_java:2.10",
+      "group": "org.apache.jmeter",
+      "name": "ApacheJMeter_java",
+      "version": "2.10",
+      "purl": "pkg:maven/org.apache.jmeter/ApacheJMeter_java@2.10"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:api-registry-annotation:1.1.0",
+      "group": "com.tableau.modules",
+      "name": "api-registry-annotation",
+      "version": "1.1.0",
+      "purl": "pkg:maven/com.tableau.modules/api-registry-annotation@1.1.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.apollographql.apollo:apollo-api:1.4.5",
+      "group": "com.apollographql.apollo",
+      "name": "apollo-api",
+      "version": "1.4.5",
+      "purl": "pkg:maven/com.apollographql.apollo/apollo-api@1.4.5"
+    },
+    {
+      "type": "library",
+      "bom-ref": "io.appium:java-client:7.6.0",
+      "group": "io.appium",
+      "name": "java-client",
+      "version": "7.6.0",
+      "purl": "pkg:maven/io.appium/java-client@7.6.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:art-java:1.24.0",
+      "group": "com.tableau.modules",
+      "name": "art-java",
+      "version": "1.24.0",
+      "purl": "pkg:maven/com.tableau.modules/art-java@1.24.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:art-java-grpc:2.12.0",
+      "group": "com.tableau.modules",
+      "name": "art-java-grpc",
+      "version": "2.12.0",
+      "purl": "pkg:maven/com.tableau.modules/art-java-grpc@2.12.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:art-java-spring-http:2.18.0",
+      "group": "com.tableau.modules",
+      "name": "art-java-spring-http",
+      "version": "2.18.0",
+      "purl": "pkg:maven/com.tableau.modules/art-java-spring-http@2.18.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.jfrog.artifactory.client:artifactory-java-client-api:2.0.0",
+      "group": "org.jfrog.artifactory.client",
+      "name": "artifactory-java-client-api",
+      "version": "2.0.0",
+      "purl": "pkg:maven/org.jfrog.artifactory.client/artifactory-java-client-api@2.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.jfrog.artifactory.client:artifactory-java-client-services:2.0.0",
+      "group": "org.jfrog.artifactory.client",
+      "name": "artifactory-java-client-services",
+      "version": "2.0.0",
+      "purl": "pkg:maven/org.jfrog.artifactory.client/artifactory-java-client-services@2.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.ow2.asm:asm:7.3.1",
+      "group": "org.ow2.asm",
+      "name": "asm",
+      "version": "7.3.1",
+      "purl": "pkg:maven/org.ow2.asm/asm@7.3.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.ow2.asm:asm-analysis:7.3.1",
+      "group": "org.ow2.asm",
+      "name": "asm-analysis",
+      "version": "7.3.1",
+      "purl": "pkg:maven/org.ow2.asm/asm-analysis@7.3.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.ow2.asm:asm-commons:7.3.1",
+      "group": "org.ow2.asm",
+      "name": "asm-commons",
+      "version": "7.3.1",
+      "purl": "pkg:maven/org.ow2.asm/asm-commons@7.3.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.ow2.asm:asm-tree:7.3.1",
+      "group": "org.ow2.asm",
+      "name": "asm-tree",
+      "version": "7.3.1",
+      "purl": "pkg:maven/org.ow2.asm/asm-tree@7.3.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.ow2.asm:asm-util:7.3.1",
+      "group": "org.ow2.asm",
+      "name": "asm-util",
+      "version": "7.3.1",
+      "purl": "pkg:maven/org.ow2.asm/asm-util@7.3.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.aspectj:aspectjrt:1.9.5",
+      "group": "org.aspectj",
+      "name": "aspectjrt",
+      "version": "1.9.5",
+      "purl": "pkg:maven/org.aspectj/aspectjrt@1.9.5"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.aspectj:aspectjweaver:1.9.7",
+      "group": "org.aspectj",
+      "name": "aspectjweaver",
+      "version": "1.9.7",
+      "purl": "pkg:maven/org.aspectj/aspectjweaver@1.9.7"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.assertj:assertj-core:3.15.0",
+      "group": "org.assertj",
+      "name": "assertj-core",
+      "version": "3.15.0",
+      "purl": "pkg:maven/org.assertj/assertj-core@3.15.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:authn-service-client-interface:6.0.0",
+      "group": "com.tableau.modules",
+      "name": "authn-service-client-interface",
+      "version": "6.0.0",
+      "purl": "pkg:maven/com.tableau.modules/authn-service-client-interface@6.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "com.tableau.modules:authn-service-java-interface:6.0.0",
+      "group": "com.tableau.modules",
+      "name": "authn-service-java-interface",
+      "version": "6.0.0",
+      "purl": "pkg:maven/com.tableau.modules/authn-service-java-interface@6.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "avalon-framework:avalon-framework:4.1.4",
+      "group": "avalon-framework",
+      "name": "avalon-framework",
+      "version": "4.1.4",
+      "purl": "pkg:maven/avalon-framework/avalon-framework@4.1.4"
+    },
+    {
+      "type": "library",
+      "bom-ref": "org.awaitility:awaitility:4.0.3",
+      "group": "org.awaitility",
+      "name": "awaitility",
+      "version": "4.0.3",
+      "purl": "pkg:maven/org.awaitility/awaitility@4.0.3"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "com.tableau.modules:admin-insights-service-protobuf:1.9.0",
+      "dependsOn": [
+        "org.antlr:antlr4-runtime",
+        "org.aspectj:aspectjrt:1.9.5",
+        "org.awaitility:awaitility:4.0.3",
+        "com.tableau.modules:allegro-client:1.190.0"
+      ]
+    },
+    {
+      "ref": "com.tableau.modules:allegro-client:1.190.0",
+      "dependsOn": [
+        "org.ow2.asm:asm:7.3.1",
+        "com.tableau.modules:admin-insights-service-protobuf:1.9.0",
+        "com.tableau.modules:allegro-db-migrations:1.7.0"
+      ]
+    },
+    {
+      "ref": "com.tableau.modules:allegro-db-migrations:1.7.0",
+      "dependsOn": [
+        "org.antlr:antlr4-runtime",
+        "com.tableau.modules:authn-service-java-interface:6.0.0",
+        "com.tableau.modules:allegro-client:1.190.0",
+        "com.rabbitmq:amqp-client:5.7.3"
+      ]
+    },
+    {
+      "ref": "com.rabbitmq:amqp-client:5.7.3",
+      "dependsOn": [
+        "com.apollographql.apollo:apollo-api:1.4.5",
+        "org.jfrog.artifactory.client:artifactory-java-client-services:2.0.0",
+        "com.tableau.modules:allegro-db-migrations:1.7.0",
+        "org.antlr:antlr4-runtime"
+      ]
+    },
+    {
+      "ref": "org.antlr:antlr4-runtime",
+      "dependsOn": [
+        "com.tableau.modules:art-java:1.24.0",
+        "com.rabbitmq:amqp-client:5.7.3",
+        "aopalliance:aopalliance:1.0"
+      ]
+    },
+    {
+      "ref": "aopalliance:aopalliance:1.0",
+      "dependsOn": [
+        "org.ow2.asm:asm-analysis:7.3.1",
+        "org.apache:axis:1.4.219",
+        "org.antlr:antlr4-runtime"
+      ]
+    },
+    {
+      "ref": "org.apache:axis:1.4.219",
+      "dependsOn": [
+        "com.tableau.modules:authn-service-java-interface:6.0.0",
+        "org.ow2.asm:asm-analysis:7.3.1"
+      ]
+    },
+    {
+      "ref": "org.apache.directory.server:apacheds-core-integ:2.0.0-M22",
+      "dependsOn": [
+        "com.tableau.modules:api-registry-annotation:1.1.0"
+      ]
+    },
+    {
+      "ref": "org.apache.directory.server:apacheds-all:2.0.0-M22",
+      "dependsOn": []
+    },
+    {
+      "ref": "org.apache.directory.server:apacheds-server-integ:2.0.0-M22",
+      "dependsOn": [
+        "org.apache:axis:1.4.219"
+      ]
+    },
+    {
+      "ref": "org.apache.jmeter:ApacheJMeter_core:2.10",
+      "dependsOn": []
+    },
+    {
+      "ref": "org.apache.jmeter:ApacheJMeter_java:2.10",
+      "dependsOn": [
+        "com.tableau.modules:art-java-spring-http:2.18.0"
+      ]
+    },
+    {
+      "ref": "com.tableau.modules:api-registry-annotation:1.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "com.apollographql.apollo:apollo-api:1.4.5",
+      "dependsOn": []
+    },
+    {
+      "ref": "io.appium:java-client:7.6.0",
+      "dependsOn": [
+        "org.awaitility:awaitility:4.0.3"
+      ]
+    },
+    {
+      "ref": "com.tableau.modules:art-java:1.24.0",
+      "dependsOn": [
+        "com.tableau.modules:api-registry-annotation:1.1.0",
+        "com.tableau.modules:authn-service-client-interface:6.0.0"
+      ]
+    },
+    {
+      "ref": "com.tableau.modules:art-java-grpc:2.12.0",
+      "dependsOn": [
+        "org.apache.directory.server:apacheds-core-integ:2.0.0-M22",
+        "com.apollographql.apollo:apollo-api:1.4.5"
+      ]
+    },
+    {
+      "ref": "com.tableau.modules:art-java-spring-http:2.18.0",
+      "dependsOn": [
+        "avalon-framework:avalon-framework:4.1.4",
+        "com.rabbitmq:amqp-client:5.7.3",
+        "org.jfrog.artifactory.client:artifactory-java-client-api:2.0.0"
+      ]
+    },
+    {
+      "ref": "org.jfrog.artifactory.client:artifactory-java-client-api:2.0.0",
+      "dependsOn": [
+        "org.apache.directory.server:apacheds-server-integ:2.0.0-M22"
+      ]
+    },
+    {
+      "ref": "org.jfrog.artifactory.client:artifactory-java-client-services:2.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "org.ow2.asm:asm:7.3.1",
+      "dependsOn": [
+        "org.ow2.asm:asm-tree:7.3.1",
+        "com.tableau.modules:authn-service-client-interface:6.0.0"
+      ]
+    },
+    {
+      "ref": "org.ow2.asm:asm-analysis:7.3.1",
+      "dependsOn": [
+        "com.tableau.modules:allegro-client:1.190.0",
+        "org.ow2.asm:asm:7.3.1"
+      ]
+    },
+    {
+      "ref": "org.ow2.asm:asm-commons:7.3.1",
+      "dependsOn": [
+        "com.apollographql.apollo:apollo-api:1.4.5",
+        "org.aspectj:aspectjrt:1.9.5",
+        "org.apache:axis:1.4.219"
+      ]
+    },
+    {
+      "ref": "org.ow2.asm:asm-tree:7.3.1",
+      "dependsOn": [
+        "com.tableau.modules:api-registry-annotation:1.1.0",
+        "com.tableau.modules:art-java:1.24.0"
+      ]
+    },
+    {
+      "ref": "org.ow2.asm:asm-util:7.3.1",
+      "dependsOn": [
+        "io.appium:java-client:7.6.0"
+      ]
+    },
+    {
+      "ref": "org.aspectj:aspectjrt:1.9.5",
+      "dependsOn": []
+    },
+    {
+      "ref": "org.aspectj:aspectjweaver:1.9.7",
+      "dependsOn": [
+        "org.apache.directory.server:apacheds-core-integ:2.0.0-M22",
+        "aopalliance:aopalliance:1.0"
+      ]
+    },
+    {
+      "ref": "org.assertj:assertj-core:3.15.0",
+      "dependsOn": [
+        "org.awaitility:awaitility:4.0.3",
+        "com.tableau.modules:allegro-client:1.190.0"
+      ]
+    },
+    {
+      "ref": "com.tableau.modules:authn-service-client-interface:6.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "com.tableau.modules:authn-service-java-interface:6.0.0",
+      "dependsOn": [
+        "org.jfrog.artifactory.client:artifactory-java-client-services:2.0.0"
+      ]
+    },
+    {
+      "ref": "avalon-framework:avalon-framework:4.1.4",
+      "dependsOn": [
+        "org.apache.directory.server:apacheds-server-integ:2.0.0-M22"
+      ]
+    },
+    {
+      "ref": "org.awaitility:awaitility:4.0.3",
+      "dependsOn": []
+    }
+  ],
+  "composition": [
+    {
+      "aggregateRef": "com.tableau.modules:admin-insights-service-protobuf:1.9.0",
+      "components": [
+        "com.tableau.modules:allegro-client:1.190.0",
+        "com.tableau.modules:allegro-db-migrations:1.7.0",
+        "com.tableau.modules:api-registry-annotation:1.1.0",
+        "com.tableau.modules:art-java:1.24.0",
+        "com.tableau.modules:art-java-grpc:2.12.0",
+        "com.tableau.modules:art-java-spring-http:2.18.0",
+        "com.tableau.modules:authn-service-client-interface:6.0.0",
+        "com.tableau.modules:authn-service-java-interface:6.0.0"
+      ]
+    },
+    {
+      "aggregateRef": "org.apache.directory.server:apacheds-core-integ:2.0.0-M22",
+      "components": [
+        "org.apache.directory.server:apacheds-all:2.0.0-M22",
+        "org.apache.directory.server:apacheds-server-integ:2.0.0-M22"
+      ]
+    },
+    {
+      "aggregateRef": "org.apache.jmeter:ApacheJMeter_core:2.10",
+      "components": [
+        "org.apache.jmeter:ApacheJMeter_java:2.10"
+      ]
+    },
+    {
+      "aggregateRef": "org.jfrog.artifactory.client:artifactory-java-client-api:2.0.0",
+      "components": [
+        "org.jfrog.artifactory.client:artifactory-java-client-services:2.0.0"
+      ]
+    },
+    {
+      "aggregateRef": "org.ow2.asm:asm:7.3.1",
+      "components": [
+        "org.ow2.asm:asm-analysis:7.3.1",
+        "org.ow2.asm:asm-commons:7.3.1",
+        "org.ow2.asm:asm-tree:7.3.1",
+        "org.ow2.asm:asm-util:7.3.1"
+      ]
+    },
+    {
+      "aggregateRef": "org.aspectj:aspectjrt:1.9.5",
+      "components": [
+        "org.aspectj:aspectjweaver:1.9.7"
+      ]
+    }
+  ]
+}
