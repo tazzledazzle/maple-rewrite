@@ -1,7 +1,9 @@
 package com.tazzledazzle
 
+import com.tazzledazzle.internal.BomParser
 import io.kotest.core.spec.style.FunSpec
 import kotlin.test.DefaultAsserter.fail
+import kotlin.test.assertEquals
 
 class BomParserTest: FunSpec({
     // This class is currently empty, but can be used for testing BOM parsing functionality in the future.
@@ -14,9 +16,9 @@ class BomParserTest: FunSpec({
     // handle different BOM formats
     test("parseJsonBomFile") {
         // Example test case for parsing a BOM file
-        // val bomParser = BomParser()
-        // val dependencies = bomParser.parseJsonBomFile("path/to/bom.json")
-        // assert(dependencies.isNotEmpty())
-        fail("Test not implemented yet because you suck at writing tests")
+         val bomParser = BomParser()
+         val dependencies = bomParser.parseJsonBomFile("path/to/bom.json")
+         assertEquals(dependencies.size,0)
+
     }
 })
