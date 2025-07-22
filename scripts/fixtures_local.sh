@@ -2,8 +2,9 @@
 set -euo pipefail
 
 # Local-only repo generator
-# Usage: ./scripts/fixtures_local.sh init 10 /tmp/maple-fixtures 1.0.0
-#        ./scripts/fixtures_local.sh destroy /tmp/maple-fixtures
+# Usage:
+#   ./scripts/fixtures_local.sh init 10 /tmp/maple-fixtures 1.0.0
+#   ./scripts/fixtures_local.sh destroy /tmp/maple-fixtures
 
 cmd=${1:-}
 
@@ -20,14 +21,13 @@ init_repos () {
   for i in $(seq -f "%02g" 1 "$count"); do
     name="${prefix}${i}"
     dir="$root/$name"
-    mkdir -p "$dir/src/main/kotlin"
+    mkdir -p "$dir/src/main/kotlin" "$dir/src/test/kotlin"
     cat > "$dir/build.gradle.kts" <<'EOF'
 plugins { kotlin("jvm") version "1.9.25" }
 repositories { mavenCentral() }
 dependencies { testImplementation(kotlin("test")) }
 tasks.test { useJUnitPlatform() }
 EOF
-    mkdir -p "$dir/src/test/kotlin"
     echo 'fun main() = println("Hello from fixture")' > "$dir/src/main/kotlin/Main.kt"
 
     pushd "$dir" >/dev/null
@@ -40,7 +40,7 @@ EOF
     echo "  {\"name\":\"$name\",\"version\":\"$version\",\"repoUrl\":\"file://$dir\",\"firstParty\":true,\"buildCmd\":\"./gradlew build\"}," >> "$bom"
   done
 
-  # remove last comma
+  # strip last comma (macOS vs GNU sed)
   sed -i '' -e '$ s/,$//' "$bom" 2>/dev/null || sed -i -e '$ s/,$//' "$bom"
   echo "]" >> "$bom"
   echo "Local fixtures created under $root"
