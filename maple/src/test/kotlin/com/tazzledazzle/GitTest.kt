@@ -1,4 +1,3 @@
 package com.tazzledazzle
 
-class GitTest {
-}
+class GitTest
