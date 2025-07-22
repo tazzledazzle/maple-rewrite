@@ -5,6 +5,7 @@ package com.tazzledazzle
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import java.nio.file.Path
 
 class Maple {
     val greeting: String
@@ -36,3 +37,47 @@ fun runMaple(args: Array<String>) {
     println("Running Maple with arguments: ${args.joinToString(", ")}")
     // Add your Maple logic here
 }
+
+interface FixtureDriver {
+    fun createRepo(name: String, version: String, buildCmd: String): RepoMeta
+    fun deleteRepo(name: String)
+}
+
+class LocalFixtureDriver(val root: Path) : FixtureDriver { /* ... */
+    override fun createRepo(name: String, version: String, buildCmd: String): RepoMeta {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteRepo(name: String) {
+        TODO("Not yet implemented")
+    }
+}
+
+class RepoMeta {
+
+}
+
+class GitHubFixtureDriver(val org: String, val ghCli: Path = Path.of("gh")) : FixtureDriver { /* ... */
+    override fun createRepo(
+        name: String,
+        version: String,
+        buildCmd: String
+    ): RepoMeta {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteRepo(name: String) {
+        TODO("Not yet implemented")
+    }
+}
+
+data class FixtureConfig(
+    val remote: RemoteMode, val root: Path, val org: String?, val prefix: String,
+    val count: Int, val version: String, val buildCmd: String
+)
+
+class RemoteMode {
+
+}
+
+fun generateFixtures(cfg: FixtureConfig): List<RepoMeta> { /* ... */ }

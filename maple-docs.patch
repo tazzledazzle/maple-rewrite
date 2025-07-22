@@ -1,0 +1,387 @@
+diff --git a/.github/ISSUE_TEMPLATE/bug.md b/.github/ISSUE_TEMPLATE/bug.md
+new file mode 100644
+index 0000000..4a0f3f1
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/bug.md
+@@ -0,0 +1,29 @@
++---
++name: "🐞 Bug"
++about: Report something that broke
++labels: bug
++---
++
++### Summary
++
++What happened?
++
++### Steps to Reproduce
++1.
++2.
++3.
++
++### Expected
++
++What should have happened?
++
++### Actual
++
++What actually happened (logs, screenshots welcome)?
++
++### Env
++- OS / Shell:
++- Java/Kotlin version:
++- Maple version / commit:
++
++### Additional context
+diff --git a/.github/ISSUE_TEMPLATE/epic.md b/.github/ISSUE_TEMPLATE/epic.md
+new file mode 100644
+index 0000000..5d1b1b0
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/epic.md
+@@ -0,0 +1,22 @@
++---
++name: "📦 Epic"
++about: Track a group of related tasks
++labels: epic
++---
++
++### Goal
++
++_One-sentence outcome._
++
++### Why (User / Business Value)
++
++### Acceptance Criteria
++- [ ] …
++
++### Linked Issues
++<!-- Use GitHub references like #123 -->
++
++### Notes
++
++### Definition of Done
++- All ACs met, docs/tests updated, CI green
+diff --git a/.github/ISSUE_TEMPLATE/task.md b/.github/ISSUE_TEMPLATE/task.md
+new file mode 100644
+index 0000000..2c6f0a8
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/task.md
+@@ -0,0 +1,24 @@
++---
++name: "🛠 Task"
++about: A concrete piece of work
++labels: task
++---
++
++### Summary
++
++### Context / Rationale
++
++### Acceptance Criteria
++- [ ] …
++
++### Testing Notes
++
++### Docs to Update
++
++### Definition of Done
++- Tests & CI passing
++- Docs updated (if applicable)
+#diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+new file mode 100644
+index 0000000..7a8a2f8
+--- /dev/null
++++ b/.github/workflows/ci.yml
+@@ -0,0 +1,39 @@
++name: CI
++
++on:
++  push:
++    branches: [ main ]
++  pull_request:
++    branches: [ main ]
++
++jobs:
++  build:
++    runs-on: ubuntu-latest
++
++    steps:
++      - uses: actions/checkout@v4
++      - uses: actions/setup-java@v4
++        with:
++          distribution: temurin
++          java-version: 21
++      - name: Cache Gradle
++        uses: actions/cache@v4
++        with:
++          path: |
++            ~/.gradle/caches
++            ~/.gradle/wrapper
++          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
++          restore-keys: |
++            ${{ runner.os }}-gradle-
++      - name: Build
++        run: ./gradlew build --no-daemon
+diff --git a/docs/design.md b/docs/design.md
+new file mode 100644
+index 0000000..f5a8d0d
+--- /dev/null
++++ b/docs/design.md
+@@ -0,0 +1,164 @@
++# Maple – Design
++
++## 1. Architecture Overview
++
++CLI → Orchestrator → Pluggable Components (BOM Parser, Repo Manager, Build Runner) → Reporter
++
++```
+++-------------------+
++| CLI / Config      |
+++---------+---------+
++          v
+++---------+---------+        +------------------+
+|  Orchestrator     | -----> | Reporter/Notifier|
++---------+----+----+        +------------------+
++          |    |
++          |    +--> Build Runner
++          +------> Repo Manager
++                 -> BOM Parser & Graph
++```
++
++## 2. Modules
++
++- **cli**: args, config, subcommands (`plan`, `run`, `resume`).
++- **bom-parser**: `BOMParser` interface + `JsonBomParser` (MVP). Future: Gradle catalog, Maven, npm.
++- **graph**: optional DAG builder for build order (stretch for v1.1).
++- **repo-manager**: clone/fetch/checkout/branch/tag/push. JGit or git CLI wrapper.
++- **build-runner**: run repo-defined build/test commands, capture logs/exit codes.
++- **orchestrator**: schedules work, concurrency, retries, state persistence.
++- **state-store**: JSON or SQLite for resume/audit.
++- **reporter**: JSON summary + pretty console. Optional webhooks/Slack.
++
++## 3. Data Model (Kotlin)
++
++```kotlin
++data class BomEntry(
++    val name: String,
++    val version: String,
++    val firstParty: Boolean,
++    val repoUrl: URI,
++    val buildCmd: String? = null
++)
++
++enum class StepStatus { PENDING, RUNNING, SUCCEEDED, FAILED, SKIPPED }
++
++data class RepoActionStatus(
++    val repo: String,
++    val checkoutSha: String? = null,
++    val branchCreated: Boolean = false,
++    val tagCreated: Boolean = false,
++    val buildStatus: StepStatus = StepStatus.PENDING,
++    val logsPath: Path? = null,
++    val error: String? = null
++)
++
++data class RunSummary(
++    val start: Instant,
++    val end: Instant,
++    val version: String,
++    val entries: List<RepoActionStatus>
++)
++```
++
++## 4. Execution Flow
++
++1. CLI parses flags & loads config/BOM.
++2. Filter first-party modules → build worklist (or DAG).
++3. For each repo (parallel within limit):
++   - Clone/fetch → checkout.
++   - Build/test.
++   - On success: branch/tag/push.
++   - Persist step status.
++4. Generate final report & optionally notify.
++
++## 5. Error & Retry
++
++- Transient vs permanent errors.
++- Exponential backoff for network/git ops.
++- Flags: `--continue-on-error`, `--resume-from repo`.
++
++## 6. Concurrency
++
++- Kotlin coroutines or fixed thread pool.
++- Separate semaphores for git ops vs builds if needed.
++
++## 7. Config / Extensibility
++
++- `.maple.yml` for defaults: repo map overrides, naming templates (`release/{version}`).
++- SPI for BOM parsers & build runners.
++- Hook points: pre-branch, post-tag scripts.
++
++## 8. Observability
++
++- JSON-structured logs.
++- Debug mode increases verbosity.
++- Optional OpenTelemetry spans wrapper.
++
++## 9. Testing
++
++- Unit: parsers, CLI, tag name generator.
++- Integration: temp git repos w/ JGit harness.
++- E2E: docker-compose + sample repos & gradle wrapper.
++- Golden files for JSON reports.
++
++## 10. Distribution
++
++- Fat JAR (Shadow) or native image (GraalVM).
++- Publish via GitHub Releases; Homebrew/SDKMAN optional.
++
++## 11. Future
++
++- Multi-BOM diff/merge.
++- UI dashboard.
++- Cross-VCS support.
++- Automatic BOM generation helper.
+diff --git a/docs/requirements.md b/docs/requirements.md
+new file mode 100644
+index 0000000..6e3a9a1
+--- /dev/null
++++ b/docs/requirements.md
+@@ -0,0 +1,139 @@
++# Maple – Requirements
++
++## 1. Purpose
++Automate auditable, consistent release branching/tagging across many first-party repos using a single source of truth (BOM). Reduce toil, drift, and missed steps.
++
++## 2. Stakeholders
++- **Release Engineer** – invokes tool, needs reliability/resume.
++- **Feature Teams** – need branches/tags for fixes.
++- **Build/CI Owners** – integrate into pipelines.
++- **Audit/Compliance** – require immutable metadata.
++
++## 3. Scope
++**In v1:**
++- Parse BOM (JSON first) to list first-party deps.
++- For each repo: checkout specified version, build/test, branch/tag/push.
++- Dry-run, resume/continue, machine & human readable reports.
++- Pluggable BOM formats/build runners.
++- Concurrency with optional dependency ordering.
++
++**Out (deferred):**
++- BOM generation.
++- Cross-VCS support.
++- UI dashboard (CLI + logs only).
++- Secrets mgmt beyond env/git helpers.
++
++## 4. Functional Requirements
++**FR1** CLI accepts `--bom <file>` and `--version <release>`.  
++**FR2** Filter first-party deps via config (prefix/allowlist).  
++**FR3** Clone/fetch repo cache, checkout BOM version.  
++**FR4** Build & test via repo command (Gradle/Maven/etc.) with timeout.  
++**FR5** On success: create `release/<version>` branch and `<version>` tag; push both.  
++**FR6** Record failures, continue/halt per policy.  
++**FR7** Emit JSON report (per-repo status, SHAs, tags).  
++**FR8** `--dry-run` (simulate, no pushes).  
++**FR9** `--resume-from <repo>` continue partial runs.  
++**FR10** `--plan` prints action graph.  
++**FR11** `.maple.yml` config overrides.  
++**FR12** Optional Slack/Webhook notification.
++
++## 5. Non-Functional Requirements
++- **Reliability:** Idempotent per repo, safe re-runs.
++- **Performance:** O(100) repos; configurable parallelism & timeouts.
++- **Security:** Avoid logging secrets; rely on git creds.
++- **Observability:** Structured logs, debug mode.
++- **Portability:** macOS/Linux, Java 17+.
++- **Testability:** Unit + integ tests, deterministic fixtures.
++- **Extensibility:** Parsers/runners via interfaces.
++
++## 6. Inputs / Outputs
++**Inputs:** BOM file, config, env (GIT creds), CLI flags.  
++**Outputs:** Branches/tags in Git, logs, JSON summary.
++
++## 7. Success Metrics
++- % releases with zero manual fixes.
++- MTTR for failed runs.
++- # of teams using Maple.
++- Run duration across N repos.
++
++## 8. Risks / Assumptions
++- BOM correctness is assumed.
++- Network/git outages; must retry.
++- Non-deterministic repo builds.
++
++## 9. Acceptance Criteria
++One command performs the release ops or surfaces actionable failure with resume/dry-run support. JSON report is produced and artifacts are traceable.
+diff --git a/docs/tasks.md b/docs/tasks.md
+new file mode 100644
+index 0000000..a3c6a6d
+--- /dev/null
++++ b/docs/tasks.md
+@@ -0,0 +1,175 @@
++# Maple – Backlog
++
++Labels used: `epic`, `task`, `bug`, `docs`, `infra`.
++
++---
++
++## Epic 0 – Repo Hygiene & Docs  _(label: epic)_
++- [ ] **Task:** Create /docs with requirements, design, tasks (this PR).  
++- [ ] **Task:** Add CONTRIBUTING.md, CODE_OF_CONDUCT.md, LICENSE.  
++- [ ] **Task:** Enhance README with quickstart & diagrams.  
++- [ ] **Task:** Add CI workflow (build/test on PR).  
++
++## Epic 1 – CLI & Config
++- [ ] **Task:** Choose CLI lib (picocli/clikt).  
++- [ ] **Task:** Implement `maple plan` to print parsed BOM and actions.  
++- [ ] **Task:** Implement `.maple.yml` loader + precedence rules (flags > file > defaults).  
++- [ ] **Task:** Unit tests for arg parsing & config.
++
++## Epic 2 – BOM Parsing
++- [ ] **Task:** Define JSON BOM schema (`name`, `version`, `repo`, `firstParty`, `buildCmd?`).  
++- [ ] **Task:** Implement `JsonBomParser`.  
++- [ ] **Task:** Validation & error messages for malformed BOM.  
++- [ ] **Task:** Parser unit tests (happy path, malformed, missing fields).
++
++## Epic 3 – Repo Manager
++- [ ] **Task:** Decide JGit vs shell exec; abstract behind interface.  
++- [ ] **Task:** Implement clone/fetch/checkout/tag/branch/push.  
++- [ ] **Task:** Retry/backoff util for git ops.  
++- [ ] **Task:** Integration tests with temp repos.
++
++## Epic 4 – Build Runner
++- [ ] **Task:** Detect or configure build command per repo.  
++- [ ] **Task:** Exec w/ timeout, capture stdout/stderr to file.  
++- [ ] **Task:** Map exit codes → success/failure; propagate error.  
++- [ ] **Task:** Tests with dummy gradle/maven projects.
++
++## Epic 5 – Orchestrator & State Store
++- [ ] **Task:** Define step/task state machine (PENDING→RUNNING→SUCCEEDED/FAILED).  
++- [ ] **Task:** Serialize run state to JSON/SQLite for resume.  
++- [ ] **Task:** Implement parallel executor w/ configurable concurrency.  
++- [ ] **Task:** `--resume-from` and `--dry-run` flags.
++
++## Epic 6 – Reporting & Notifications
++- [ ] **Task:** JSON summary writer (RunSummary).  
++- [ ] **Task:** Pretty console table output.  
++- [ ] **Task:** Optional Slack/Webhook notifier (flag + URL).  
++- [ ] **Task:** Golden file tests for summary output.
++
++## Epic 7 – Advanced Features (Stretch)
++- [ ] **Task:** Build dependency DAG & topological order.  
++- [ ] **Task:** Multi-BOM merge/diff command.  
++- [ ] **Task:** Plugin API for custom steps/hook scripts.  
++- [ ] **Task:** GraalVM native-image packaging.
++
++## Epic 8 – Release & Adoption
++- [ ] **Task:** Define semver & release process.  
++- [ ] **Task:** GitHub release workflow + changelog automation.  
++- [ ] **Task:** Sample repos + demo script.  
++- [ ] **Task:** Internal adoption guide.
++
++---
++
++### Definition of Done (global)
++- Tests & CI green
++- Docs updated
++- Code reviewed/approved
