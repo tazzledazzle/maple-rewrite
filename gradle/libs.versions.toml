@@ -3,9 +3,11 @@
 
 [versions]
 guava = "33.4.5-jre"
+argparse = "2.0.7"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+argparser = { module = "com.xenomachina:kotlin-argparser", version.ref = "argparse" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.0" }
