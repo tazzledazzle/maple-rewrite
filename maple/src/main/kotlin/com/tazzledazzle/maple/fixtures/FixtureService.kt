@@ -29,7 +29,14 @@ class FixturesService(
             println("No BOM at $bomFile; skipping.")
             return
         }
-        val entries: List<BomEntry> = mapper.readValue(bomFile.toFile())
+        val entries: List<BomEntry> =
+            mapper.readValue(
+                bomFile.toFile(),
+                mapper.typeFactory.constructCollectionType(
+                    List::class.java,
+                    BomEntry::class.java
+                )
+            )
         when (spec.remote) {
             "local" -> local.destroy(entries, spec)
             "github" -> gh.destroy(entries, spec)
