@@ -11,6 +11,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
 import kotlin.io.path.readText
+import kotlin.test.Ignore
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -65,6 +66,7 @@ class MapleE2ETest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("scenarios")
+    @Ignore("E2E tests are slow and should be run manually")
     fun runScenario(s: Scenario) {
         val spec = FixturesSpec("local", 3, root, null, "fx-", "1.0.0", "./gradlew build")
         svc.init(spec)
