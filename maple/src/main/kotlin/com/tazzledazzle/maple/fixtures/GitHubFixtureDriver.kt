@@ -17,12 +17,12 @@ class GitHubFixtureDriver : FixtureDriver {
             val dir = tmpRoot.resolve(name)
             Files.createDirectories(dir)
             LocalFixtureDriver().scaffoldGradle(dir)
-            run("git", "init", dir)
-            run("git", "remote", "add", "origin", "git@github.com:$full.git", dir)
-            run("git", "add", ".", dir)
-            run("git", "commit", "-m", "init $name", dir)
-            run("git", "tag", spec.version, dir)
-            run("git", "push", "origin", "HEAD:main", "--tags", dir)
+            run("git", "init", dir.toString())
+            run("git", "remote", "add", "origin", "git@github.com:$full.git", dir.toString())
+            run("git", "add", ".", dir.toString())
+            run("git", "commit", "-m", "init $name", dir.toString())
+            run("git", "tag", spec.version, dir.toString())
+            run("git", "push", "origin", "HEAD:main", "--tags", dir.toString())
 
             list += BomEntry(
                 name, spec.version, "git@github.com:$full.git",
