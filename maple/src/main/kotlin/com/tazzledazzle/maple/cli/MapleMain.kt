@@ -4,11 +4,12 @@ fun main(rawArgs: Array<String>) {
     val args = rawArgs.toList()
     if (args.isEmpty()) {
         println("Usage: maple <command> [args]")
-        println("Commands: fixtures, plan, run, resume (others TBD)")
+        println("Commands: fixtures, plan, run, resume, query")
         return
     }
     when (args[0]) {
         "fixtures" -> FixturesCommand.run(args.drop(1))
+        "query" -> QueryCommand.run(args.drop(1))
         else -> println("Unknown command ${args[0]}")
     }
 }
