@@ -1,0 +1,250 @@
+diff --git a/docs/build-runner.md b/docs/build-runner.md
+new file mode 100644
+index 0000000..deadbee
+--- /dev/null
++++ b/docs/build-runner.md
+@@ -0,0 +1,165 @@
++# Build Runner Definition
++
++## Purpose
++Standardize how Maple invokes a repo's build/test steps, captures logs, enforces timeouts, and reports success/failure.
++
++## Requirements
++**FR-BR1**: Accept a working dir, command (string or tokens), env vars, and timeout.
++**FR-BR2**: Stream logs to console (optional) and persist to a file.
++**FR-BR3**: Return a structured result (success, exitCode, duration, log path).
++**FR-BR4**: Detect common build tools if command not provided (gradlew, mvnw, npm, etc.) – MVP: Gradle & Maven.
++**FR-BR5**: Redact secrets in logs (basic env var filter).
++**FR-BR6**: Be idempotent and deterministic (same inputs → same result).
++
++## Interface
++```kotlin
++interface BuildRunner {
++    fun run(spec: BuildSpec): BuildResult
++}
++
++data class BuildSpec(
++    val repoRoot: Path,
++    val command: List<String>,
++    val env: Map<String, String> = emptyMap(),
++    val timeout: Duration = Duration.ofMinutes(15),
++    val logDir: Path
++)
++
++sealed class BuildResult {
++    data class Success(val duration: Duration, val logFile: Path) : BuildResult()
++    data class Failure(val exitCode: Int, val duration: Duration, val logFile: Path, val message: String?) : BuildResult()
++}
++```
++
++## Detection Algorithm
++```
++if explicit command -> use it
++else if ./gradlew exists -> ["./gradlew","build"]
++else if ./mvnw or pom.xml -> ["./mvnw","-B","verify"] or ["mvn","-B","verify"]
++else -> error (or fallback to do-nothing)
++```
++
++## Implementation Notes
++- Use `ProcessBuilder`.
++- Separate thread to read stdout/stderr and write to log file.
++- Timeout enforced with `Process.waitFor(timeout)`, then destroy process tree.
++- Log file per repo per run: `${logDir}/${repoName}-${timestamp}.log`.
++- Redaction: simple regex against env var names (e.g., TOKEN, PASS, SECRET).
++
++## Testing
++- Unit: detection logic, command builder, timeout triggers.
++- Integration: dummy Gradle project, intentionally failing script.
++- Golden log comparison.
++
++## Future
++- Parallel test segmentation.
++- Rich test summaries (parsing JUnit results).
++- Custom runner plugins.
+diff --git a/src/main/kotlin/com/tazzledazzle/maple/build/BuildRunner.kt b/src/main/kotlin/com/tazzledazzle/maple/build/BuildRunner.kt
+new file mode 100644
+index 0000000..1000001
+--- /dev/null
++++ b/src/main/kotlin/com/tazzledazzle/maple/build/BuildRunner.kt
+@@ -0,0 +1,107 @@
++package com.tazzledazzle.maple.build
++
++import java.nio.file.Files
++import java.nio.file.Path
++import java.time.Duration
++import java.time.Instant
++
++interface BuildRunner {
++    fun run(spec: BuildSpec): BuildResult
++}
++
++data class BuildSpec(
++    val repoRoot: Path,
++    val command: List<String>,
++    val env: Map<String, String> = emptyMap(),
++    val timeout: Duration = Duration.ofMinutes(15),
++    val logDir: Path
++)
++
++sealed class BuildResult {
++    data class Success(val duration: Duration, val logFile: Path) : BuildResult()
++    data class Failure(
++        val exitCode: Int,
++        val duration: Duration,
++        val logFile: Path,
++        val message: String? = null
++    ) : BuildResult()
++}
++
++object BuildRunnerFactory {
++    fun detect(repoRoot: Path, explicit: String?, logDir: Path): BuildSpec {
++        if (explicit != null) {
++            return BuildSpec(repoRoot, explicit.split(" "), logDir = logDir)
++        }
++        val gradlew = repoRoot.resolve("gradlew")
++        val mvnw = repoRoot.resolve("mvnw")
++        return when {
++            Files.exists(gradlew) -> BuildSpec(repoRoot, listOf("./gradlew", "build"), logDir = logDir)
++            Files.exists(mvnw) || Files.exists(repoRoot.resolve("pom.xml")) ->
++                BuildSpec(repoRoot, listOf("./mvnw", "-B", "verify"), logDir = logDir)
++            else -> throw IllegalArgumentException("No build command found for $repoRoot")
++        }
++    }
++}
++
++class ShellBuildRunner : BuildRunner {
++    override fun run(spec: BuildSpec): BuildResult {
++        Files.createDirectories(spec.logDir)
++        val logFile = spec.logDir.resolve("build-${Instant.now().toEpochMilli()}.log")
++
++        val start = Instant.now()
++        val pb = ProcessBuilder(spec.command)
++            .directory(spec.repoRoot.toFile())
++            .redirectErrorStream(true)
++
++        val env = pb.environment()
++        spec.env.forEach { (k, v) -> env[k] = v }
++
++        val proc = pb.start()
++
++        // stream logs to file
++        val out = Files.newBufferedWriter(logFile)
++        val t = Thread {
++            proc.inputStream.bufferedReader().useLines { lines ->
++                lines.forEach { line ->
++                    out.write(redact(line))
++                    out.newLine()
++                }
++            }
++        }
++        t.start()
++
++        val finished = proc.waitFor(spec.timeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)
++        if (!finished) {
++            proc.destroyForcibly()
++            t.join()
++            out.close()
++            return BuildResult.Failure(
++                exitCode = -1,
++                duration = Duration.between(start, Instant.now()),
++                logFile = logFile,
++                message = "Timeout after ${spec.timeout.toMinutes()}m"
++            )
++        }
++        t.join()
++        out.close()
++
++        val duration = Duration.between(start, Instant.now())
++        val code = proc.exitValue()
++        return if (code == 0) {
++            BuildResult.Success(duration, logFile)
++        } else {
++            BuildResult.Failure(code, duration, logFile, "Exited $code")
++        }
++    }
++
++    private val redactKeys = listOf("TOKEN", "PASS", "SECRET", "KEY")
++    private fun redact(line: String): String {
++        // naive approach
++        var out = line
++        redactKeys.forEach { k ->
++            // TOKEN=abc123 -> TOKEN=****, also ...token... patterns
++            out = out.replace(Regex("(?i)$k=\\S+"), "$k=****")
++        }
++        return out
++    }
++}
+diff --git a/src/test/kotlin/com/tazzledazzle/maple/build/BuildRunnerTest.kt b/src/test/kotlin/com/tazzledazzle/maple/build/BuildRunnerTest.kt
+new file mode 100644
+index 0000000..f00baa0
+--- /dev/null
++++ b/src/test/kotlin/com/tazzledazzle/maple/build/BuildRunnerTest.kt
+@@ -0,0 +1,74 @@
++package com.tazzledazzle.maple.build
++
++import org.junit.jupiter.api.Assertions.*
++import org.junit.jupiter.api.Test
++import java.nio.file.Files
++import java.nio.file.Path
++import java.time.Duration
++
++class BuildRunnerTest {
++
++    @Test
++    fun `shell runner succeeds on trivial script`() {
++        val tmp = Files.createTempDirectory("maple-test")
++        val script = tmp.resolve("build.sh")
++        Files.writeString(script, "#!/usr/bin/env bash\necho OK\n")
++        script.toFile().setExecutable(true)
++
++        val spec = BuildSpec(
++            repoRoot = tmp,
++            command = listOf("./build.sh"),
++            timeout = Duration.ofSeconds(5),
++            logDir = tmp
++        )
++        val res = ShellBuildRunner().run(spec)
++        assertTrue(res is BuildResult.Success)
++    }
++
++    @Test
++    fun `timeout triggers failure`() {
++        val tmp = Files.createTempDirectory("maple-test2")
++        val script = tmp.resolve("sleep.sh")
++        Files.writeString(script, "#!/usr/bin/env bash\nsleep 3\n")
++        script.toFile().setExecutable(true)
++
++        val spec = BuildSpec(
++            repoRoot = tmp,
++            command = listOf("./sleep.sh"),
++            timeout = Duration.ofSeconds(1),
++            logDir = tmp
++        )
++        val res = ShellBuildRunner().run(spec)
++        assertTrue(res is BuildResult.Failure)
++        res as BuildResult.Failure
++        assertEquals(-1, res.exitCode)
++    }
++
++    @Test
++    fun `factory detects gradle`() {
++        val tmp = Files.createTempDirectory("maple-test3")
++        Files.writeString(tmp.resolve("gradlew"), "dummy").toFile().setExecutable(true)
++        val spec = BuildRunnerFactory.detect(tmp, null, tmp)
++        assertEquals("./gradlew", spec.command.first())
++    }
++}
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 0000000..abc1234 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -0,0 +1,12 @@
++// ensure test deps for JUnit if not present
++dependencies {
++    testImplementation(kotlin("test"))
++    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
++}
++
++tasks.test {
++    useJUnitPlatform()
++}
