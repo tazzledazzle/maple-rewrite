@@ -1,6 +1,8 @@
 package com.tazzledazzle
 
 import com.tazzledazzle.internal.BomParser
+import com.tazzledazzle.internal.MODULE_GROUP_PREFIX
+import com.tazzledazzle.internal.model.ComponentDependency
 import io.kotest.core.spec.style.FunSpec
 import kotlin.test.DefaultAsserter.fail
 import kotlin.test.assertEquals
@@ -43,4 +45,27 @@ class BomParserTest: FunSpec({
         val dependencies = bomParser.dependencyRefsFromBom(emptyBom)
         assertEquals(dependencies.size, 0)
     }
+    test("correlate components with dependencies") {
+        // Example test case for correlating components with dependencies
+        val dependencies = bomParser.dependencyRefsFromBom(bom)
+        val components = bomParser.componentRefsFromBom(bom)
+        val compDepList = mutableListOf<ComponentDependency>()
+        bom.dependencies.forEach { dependency ->
+            val componentDep = bom.components
+                .filter{ it.group.startsWith(MODULE_GROUP_PREFIX)}
+                .find { it.bomRef == dependency.ref }
+                ?.convertToComponentDependency()!!
+            dependency.dependsOn.forEach { dep ->
+                componentDep.dependencies += bom.components
+                        .filter{ it.group.startsWith(MODULE_GROUP_PREFIX)}
+                        .find { it.bomRef == dependency.ref }
+                        ?.convertToComponentDependency()
+                    ?: fail("Dependency not found: $dep")
+            }
+            compDepList.add(componentDep)
+        }
+
+        assertEquals(compDepList.size, 32)
+    }
 })
+

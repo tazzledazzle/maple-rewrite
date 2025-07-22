@@ -27,16 +27,32 @@ data class MetadataTool (
 )
 
 data class BomComponent (
-    var type: String,
+    var type: String = "",
     @SerializedName("bom-ref")
-    var bomRef : String,
-    var group: String,
-    var name: String,
-    var version: String,
-    var purl: String
-)
+    var bomRef : String = "",
+    var group: String = "",
+    var name: String = "",
+    var version: String = "",
+    var purl: String = ""
+) {
+    fun convertToComponentDependency(): ComponentDependency {
+        return ComponentDependency(
+            component = this,
+            dependencies = listOf()
+        )
+    }
+}
 
 data class BomDependency(
    var ref: String,
     var dependsOn: List<String>
 )
+
+data class ComponentDependency(
+    var component: BomComponent = BomComponent(),
+    var dependencies: List<ComponentDependency> = listOf()
+) {
+    override fun toString(): String {
+        return "ComponentDependency(component=$component, dependencies=$dependencies)"
+    }
+}
