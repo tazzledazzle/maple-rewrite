@@ -4,10 +4,12 @@
 [versions]
 guava = "33.4.5-jre"
 argparse = "2.0.7"
+kotest = "5.9.0"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 argparser = { module = "com.xenomachina:kotlin-argparser", version.ref = "argparse" }
+kotest = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.0" }
