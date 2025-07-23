@@ -41,6 +41,7 @@ dependencies {
     implementation("io.prometheus:simpleclient:0.16.0")
     implementation("io.prometheus:simpleclient_hotspot:0.16.0")
     implementation("io.prometheus:simpleclient_httpserver:0.16.0")
+    implementation("org.xerial:sqlite-jdbc:3.46.0.0")
     // kgit (replace with correct coords if different)
 //    implementation("io.github.bitspittle:kgit:0.1.3") // <-- adjust to the lib you actually want
     // ensure test deps for JUnit if not present
