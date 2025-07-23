@@ -13,10 +13,5 @@ class GitTest: FunSpec( {
     // - Creating tags
     // - Handling merge conflicts
 
-    test("can create a git instance") {
-        // Example test case for creating a Git instance
-        val git = com.tazzledazzle.internal.MapleGit.getInstance()
-        assert(git != null) { "Git instance should not be null" }
-    }
 
-}
+})

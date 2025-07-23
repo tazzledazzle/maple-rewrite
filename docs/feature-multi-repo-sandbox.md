@@ -26,6 +26,8 @@ Provide a first-class way to create, update, and tear down a fleet of small git 
 - FR5: Optional build command injection.
 - FR6: Clean teardown.
 
+  Implementation moved to Kotlin in `com.tazzledazzle.maple.fixtures`.
+
 ## NFR
 - Linux/macOS portability.
 - Offline local mode.

@@ -1,0 +1,47 @@
+name: E2E Fixtures
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "src/**"
+      - "docs/**"
+      - ".github/workflows/e2e-fixtures.yml"
+
+jobs:
+  e2e-local:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build
+        run: ./gradlew build --no-daemon
+      # - name: Generate fixtures
+      #   run: ./gradlew run --args="fixtures init --remote local --count 3 --root /tmp/maple-fixtures --version 1.0.0"
+      # - name: Plan Maple
+      #   run: ./gradlew run --args="plan --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0"
+      # - name: Dry run Maple
+      #   run: ./gradlew run --args="run --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0 --dry-run"
+
+  e2e-docker:
+    runs-on: ubuntu-latest
+    if: ${{ false }} # enable when docker privileges ok
+    env:
+      DOCKER_AVAILABLE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build
+        run: ./gradlew build --no-daemon
+      # - name: Generate fixtures
+      #   run: ./gradlew run --args="fixtures init --remote local --count 1 --root /tmp/maple-fixtures --version 1.0.0"
+      # - name: Run maple (docker mode)
+      #   run: ./gradlew run --args="run --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0 --docker"
