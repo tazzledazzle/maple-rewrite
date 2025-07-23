@@ -35,6 +35,12 @@ dependencies {
     // YAML (if we need fixtures config parsing later)
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+    testImplementation("org.assertj:assertj-core:3.25.3")
+    // Prometheus
+    implementation("io.prometheus:simpleclient:0.16.0")
+    implementation("io.prometheus:simpleclient_hotspot:0.16.0")
+    implementation("io.prometheus:simpleclient_httpserver:0.16.0")
     // kgit (replace with correct coords if different)
 //    implementation("io.github.bitspittle:kgit:0.1.3") // <-- adjust to the lib you actually want
     // ensure test deps for JUnit if not present
