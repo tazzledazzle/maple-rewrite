@@ -12,12 +12,30 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    jacoco
+
 }
 
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestReport)
 }
 
 dependencies {
