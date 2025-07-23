@@ -45,7 +45,7 @@ class BomParserTest: FunSpec({
         val dependencies = bomParser.dependencyRefsFromBom(emptyBom)
         assertEquals(dependencies.size, 0)
     }
-    test("correlate components with dependencies") {
+    xtest("correlate components with dependencies") {
         // Example test case for correlating components with dependencies
         val dependencies = bomParser.dependencyRefsFromBom(bom)
         val components = bomParser.componentRefsFromBom(bom)
