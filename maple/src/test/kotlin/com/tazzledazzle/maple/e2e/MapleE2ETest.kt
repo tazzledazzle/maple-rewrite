@@ -3,7 +3,6 @@ package com.tazzledazzle.maple.e2e
 import com.tazzledazzle.maple.fixtures.FixturesService
 import com.tazzledazzle.maple.fixtures.FixturesSpec
 import com.tazzledazzle.maple.orchestrator.StateStore
-import com.tazzledazzle.maple.orchestrator.model.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -11,7 +10,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.test.Ignore
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -65,7 +63,7 @@ class MapleE2ETest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("scenarios")
-    @Ignore("E2E tests are slow and should be run manually")
+    @Ignore("E2E tests are not run by default, use -Dtest=MapleE2ETest to run")
     fun runScenario(s: Scenario) {
         val spec = FixturesSpec("local", 3, root, null, "fx-", "1.0.0", "./gradlew build")
         svc.init(spec)
