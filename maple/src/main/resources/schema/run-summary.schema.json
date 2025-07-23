@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RunSummary",
+  "type": "object",
+  "required": ["runId", "version", "start", "status", "repos", "metrics"],
+  "properties": {
+    "runId": { "type": "string" },
+    "version": { "type": "string" },
+    "start": { "type": "string", "format": "date-time" },
+    "end": { "type": ["string","null"], "format": "date-time" },
+    "status": { "type": "string", "enum": ["SUCCEEDED","FAILED","PARTIAL"] },
+    "repos": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/RepoActionStatus" }
+    },
+    "metrics": { "$ref": "#/definitions/RunMetrics" }
+  },
+  "definitions": {
+    "RepoActionStatus": {
+      "type": "object",
+      "required": ["name","repoUrl","bomVersion","build","gitOps","retries","durationMs"],
+      "properties": {
+        "name": {"type":"string"},
+        "repoUrl": {"type":"string"},
+        "bomVersion": {"type":"string"},
+        "checkoutSha": {"type":["string","null"]},
+        "branchCreated": {"type":["string","null"]},
+        "tagCreated": {"type":["string","null"]},
+        "build": {"$ref":"#/definitions/BuildStepStatus"},
+        "gitOps": {"$ref":"#/definitions/GitOpsStatus"},
+        "retries": {"type":"integer"},
+        "durationMs": {"type":"integer"},
+        "logsPath": {"type":["string","null"]},
+        "scanUrl": {"type":["string","null"]},
+        "errorType": {"type":["string","null"]},
+        "errorMessage": {"type":["string","null"]}
+      }
+    },
+    "BuildStepStatus": {
+      "type":"object",
+      "required":["status","durationMs"],
+      "properties":{
+        "status":{"type":"string","enum":["PENDING","RUNNING","SUCCEEDED","FAILED","SKIPPED"]},
+        "exitCode":{"type":["integer","null"]},
+        "durationMs":{"type":"integer"}
+      }
+    },
+    "GitOpsStatus": {
+      "type":"object",
+      "properties":{
+        "checkout":{"type":"string","enum":["PENDING","RUNNING","SUCCEEDED","FAILED","SKIPPED"]},
+        "branch":{"type":"string","enum":["PENDING","RUNNING","SUCCEEDED","FAILED","SKIPPED"]},
+        "tag":{"type":"string","enum":["PENDING","RUNNING","SUCCEEDED","FAILED","SKIPPED"]},
+        "push":{"type":"string","enum":["PENDING","RUNNING","SUCCEEDED","FAILED","SKIPPED"]}
+      }
+    },
+    "RunMetrics": {
+      "type":"object",
+      "required":["totalRepos","succeeded","failed","skipped","totalDurationMs"],
+      "properties":{
+        "totalRepos":{"type":"integer"},
+        "succeeded":{"type":"integer"},
+        "failed":{"type":"integer"},
+        "skipped":{"type":"integer"},
+        "totalDurationMs":{"type":"integer"}
+      }
+    }
+  }
+}
