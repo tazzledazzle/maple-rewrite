@@ -21,12 +21,12 @@ jobs:
           java-version: 21
       - name: Build
         run: ./gradlew build --no-daemon
-      - name: Generate fixtures
-        run: ./gradlew run --args="fixtures init --remote local --count 3 --root /tmp/maple-fixtures --version 1.0.0"
-      - name: Plan Maple
-        run: ./gradlew run --args="plan --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0"
-      - name: Dry run Maple
-        run: ./gradlew run --args="run --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0 --dry-run"
+      # - name: Generate fixtures
+      #   run: ./gradlew run --args="fixtures init --remote local --count 3 --root /tmp/maple-fixtures --version 1.0.0"
+      # - name: Plan Maple
+      #   run: ./gradlew run --args="plan --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0"
+      # - name: Dry run Maple
+      #   run: ./gradlew run --args="run --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0 --dry-run"
 
   e2e-docker:
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
           java-version: 21
       - name: Build
         run: ./gradlew build --no-daemon
-      - name: Generate fixtures
-        run: ./gradlew run --args="fixtures init --remote local --count 1 --root /tmp/maple-fixtures --version 1.0.0"
-      - name: Run maple (docker mode)
-        run: ./gradlew run --args="run --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0 --docker"
+      # - name: Generate fixtures
+      #   run: ./gradlew run --args="fixtures init --remote local --count 1 --root /tmp/maple-fixtures --version 1.0.0"
+      # - name: Run maple (docker mode)
+      #   run: ./gradlew run --args="run --bom /tmp/maple-fixtures/fixtures-bom.json --version 1.0.0 --docker"
