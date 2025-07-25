@@ -47,9 +47,9 @@ dependencies {
     testImplementation(libs.kotest)
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-    // docker-java
-    implementation("com.github.docker-java:docker-java-core:3.3.6")
-    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.3.6")
+    // docker-java - use consistent versions
+    implementation("com.github.docker-java:docker-java-core:3.5.3")
+    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.5.3")
     // YAML (if we need fixtures config parsing later)
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
@@ -60,9 +60,9 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:0.16.0")
     implementation("io.prometheus:simpleclient_httpserver:0.16.0")
     implementation("org.xerial:sqlite-jdbc:3.46.0.0")
-    // kgit (replace with correct coords if different)
-//    implementation("io.github.bitspittle:kgit:0.1.3") // <-- adjust to the lib you actually want
-    // ensure test deps for JUnit if not present
+    // Logging
+    implementation("ch.qos.logback:logback-classic:1.4.14")
+    implementation("org.slf4j:slf4j-api:2.0.9")
 }
 
 tasks.test {
@@ -88,5 +88,5 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.MapleKt"
+    mainClass = "com.tazzledazzle.maple.cli.MapleMainKt"
 }

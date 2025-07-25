@@ -34,6 +34,8 @@ class SqliteStateStore(private val dbPath: Path = Path.of(".maple/state/maple.db
         }
     }
 
+    fun saveRun(summary: RunSummary) = save(summary)
+    
     fun save(summary: RunSummary) {
         connection().use { conn ->
             conn.autoCommit = false
