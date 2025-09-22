@@ -1,9 +1,9 @@
 name: Nightly Remote E2E
 
-on:
-  schedule:
-    - cron: "0 09 * * *"   # 09:00 UTC ~ 02:00 PST
-  workflow_dispatch:
+# on:
+#   schedule:
+#     - cron: "0 09 * * *"   # 09:00 UTC ~ 02:00 PST
+#   workflow_dispatch:
 
 permissions:
   contents: write
