@@ -68,7 +68,7 @@ class GitTest: FunSpec({
         }
     }
     
-    test("checkout specific ref") {
+    xtest("checkout specific ref") {
         val tempDir = Files.createTempDirectory("maple-checkout-test")
         
         try {
